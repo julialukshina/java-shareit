@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class UserControllerTests {
     private UserDto user;
-    private UserDto validUser = new UserDto(1, "sasha", "sashaivanova@yandex.ru");
+    private final UserDto validUser = new UserDto(1, "sasha", "sashaivanova@yandex.ru");
     private String body;
     @Autowired
     ObjectMapper objectMapper;
@@ -94,22 +94,22 @@ public class UserControllerTests {
         assertEquals(validUser.getName(), userController.getUserById(1L).getName());
     }
 
-    @Test
-    public void goodDeleteUserTest() throws Exception {//тест на корректное удаление объекта
+    @Test//тест на корректное удаление объекта
+    public void goodDeleteUserTest() throws Exception {
         this.mockMvc.perform(delete("/users/1"))
                 .andExpect(status().isOk());
         assertEquals(0, userController.getAllUsers().size());
     }
 
-    @Test
-    public void badDeleteUserTest() throws Exception { //тест на некорректное удаление объекта
+    @Test//тест на некорректное удаление объекта
+    public void badDeleteUserTest() throws Exception {
         this.mockMvc.perform(delete("/users/100"))
                 .andExpect(status().isNotFound());
         assertEquals(1, userController.getAllUsers().size());
     }
 
-    @Test
-    public void goodGetUserByIdTest() throws Exception { //тест на корректное получение объекта по id
+    @Test //тест на корректное получение объекта по id
+    public void goodGetUserByIdTest() throws Exception {
         this.mockMvc.perform(get("/users/1"))
                 .andExpect(status().isOk());
     }

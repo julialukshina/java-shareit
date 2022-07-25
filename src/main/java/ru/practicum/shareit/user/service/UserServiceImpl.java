@@ -91,7 +91,8 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toUserDto(repository.getUserById(id));
     }
 
-    private long generateId() {//метод генерации id
+    //метод генерации id
+    private long generateId() {
         return id++;
     }
 

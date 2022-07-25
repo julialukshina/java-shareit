@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Repository
 public class ItemRepository {
-    private Map<Long, Item> items = new HashMap<>();
+    private final Map<Long, Item> items = new HashMap<>();
 
     public void addItem(Item item) {
         items.put(item.getId(), item);

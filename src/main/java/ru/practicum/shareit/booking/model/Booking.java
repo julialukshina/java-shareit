@@ -20,10 +20,10 @@ public class Booking {
     @Future
     private LocalDate end;
     private long itemId;
-    private  long bookerId;
-    private BOOKING_STATUS bookingStatus;
+    private long bookerId;
+    private BOOKINGSTATUS bookingStatus;
 
-    public Booking(long id, LocalDate start, LocalDate end, long itemId, long bookerId, BOOKING_STATUS bookingStatus) {
+    public Booking(long id, LocalDate start, LocalDate end, long itemId, long bookerId, BOOKINGSTATUS bookingStatus) {
         this.id = id;
         this.start = start;
         this.end = end;

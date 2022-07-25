@@ -29,10 +29,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @TestInstance(Lifecycle.PER_CLASS)
 public class ItemControllerTest {
-    private UserDto user1 = new UserDto(1, "sasha", "ivanova@yandex.ru");
-    private UserDto user2 = new UserDto(2, "masha", "mashaivanova@yandex.ru");
+    private final UserDto user1 = new UserDto(1, "sasha", "ivanova@yandex.ru");
+    private final UserDto user2 = new UserDto(2, "masha", "mashaivanova@yandex.ru");
 
-    private ItemDto validItem = new ItemDto(1L, "Стол", "Журнальный стол", true, 1, null);
+    private final ItemDto validItem = new ItemDto(1L, "Стол", "Журнальный стол", true, 1, null);
 
     private ItemDto item1;
     private String body;
@@ -124,29 +124,29 @@ public class ItemControllerTest {
 
     @Test
     public void goodGetItemByIdTest() throws Exception {
-        this.mockMvc.perform(get("/items/1")).
-                andExpect(status().isOk());
+        this.mockMvc.perform(get("/items/1"))
+                .andExpect(status().isOk());
     }
 
     @Test
     public void badGetItemByIdTest() throws Exception {
-        this.mockMvc.perform(get("/items/100")).
-                andExpect(status().isNotFound());
+        this.mockMvc.perform(get("/items/100"))
+                .andExpect(status().isNotFound());
     }
 
 
     @Test
     public void goodDeleteItemTest() throws Exception {
-        this.mockMvc.perform(delete("/items/1").header("X-Sharer-User-Id", 1)).
-                andExpect(status().isOk());
+        this.mockMvc.perform(delete("/items/1").header("X-Sharer-User-Id", 1))
+                .andExpect(status().isOk());
     }
 
     @Test
     public void badDeleteItemTest() throws Exception {
-        this.mockMvc.perform(delete("/items/1").header("X-Sharer-User-Id", 100)).
-                andExpect(status().isNotFound());
-        this.mockMvc.perform(delete("/items/100").header("X-Sharer-User-Id", 1)).
-                andExpect(status().isNotFound());
+        this.mockMvc.perform(delete("/items/1").header("X-Sharer-User-Id", 100))
+                .andExpect(status().isNotFound());
+        this.mockMvc.perform(delete("/items/100").header("X-Sharer-User-Id", 1))
+                .andExpect(status().isNotFound());
     }
 
     @Test
