@@ -4,6 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import ru.practicum.shareit.OnCreate;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -14,11 +15,11 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode
 public class ItemDto {
     private long id;
-    @NotBlank
+    @NotBlank (groups = OnCreate.class)
     private String name;
-    @NotBlank
+    @NotBlank (groups = OnCreate.class)
     private String description;
-    @NotNull
+    @NotNull (groups = OnCreate.class)
     private Boolean available;
     private long ownerId;
     private Long request;

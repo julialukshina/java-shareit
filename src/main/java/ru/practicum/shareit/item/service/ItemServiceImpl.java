@@ -60,37 +60,28 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto updateItem(long userId, Long itemId, Map<String, String> item) {
+    public ItemDto updateItem(long userId, Long itemId, ItemDto item) {
         itemValidation(itemId);
-        if (userId != repository.getItemById(itemId).getOwnerId()) {
+        if (userId != repository.getItemById(itemId).getOwner().getId()) {
             throw new NotOwnerException("The item can be updated only by the owner");
         }
+        if (item.getName() != null) {
+            if (item.getName().isBlank()) {
+                throw new ItemValidationException("The name can not be empty");
+            }
+        }
+        if (item.getDescription() != null) {
+            if (item.getDescription().isBlank()) {
+                throw new ItemValidationException("The name can not be empty");
+            }
+        }
         usersItems.get(userId).remove(repository.getItemById(itemId));
-        String name = null;
-        String description = null;
-        Boolean available = null;
-        if (item.containsKey("name")) {
-            if (!item.get("name").isBlank()) {
-                name = item.get("name");
-            } else {
-                throw new ItemValidationException("The name can't be empty");
-            }
-        }
-        if (item.containsKey("description")) {
-            if (!item.get("description").isBlank()) {
-                description = item.get("description");
-            } else {
-                throw new ItemValidationException("The description can't be empty");
-            }
-        }
-        if (item.containsKey("available")) {
-            available = Boolean.valueOf(item.get("available"));
-        }
-        repository.updateItem(itemId, name, description, available);
+        repository.updateItem(itemId, item.getName(), item.getDescription(), item.getAvailable());
         usersItems.get(userId).add(repository.getItemById(itemId));
         log.info("The item with id {} updated", itemId);
         return getItemById(itemId);
     }
+
 
     @Override
     public ItemDto getItemById(Long itemId) {
@@ -101,10 +92,10 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public void deleteItem(Long userId, Long itemId) {
         itemValidation(itemId);
-        if (userId != repository.getItemById(itemId).getOwnerId()) {
+        if (userId != repository.getItemById(itemId).getOwner().getId()) {
             throw new NotOwnerException("The item can be deleted only by the owner");
         }
-        usersItems.get(repository.getItemById(itemId).getOwnerId()).remove(repository.getItemById(itemId));
+        usersItems.get(repository.getItemById(itemId).getOwner().getId()).remove(repository.getItemById(itemId));
         repository.deleteItem(itemId);
         log.info("The item with id {} deleted", itemId);
     }
@@ -145,5 +136,10 @@ public class ItemServiceImpl implements ItemService {
         repository.clear();
         usersItems.clear();
         id = 1;
+    }
+
+    @Override
+    public Item getItem(long id) {
+        return repository.getItemById(id);
     }
 }

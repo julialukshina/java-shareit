@@ -9,6 +9,7 @@ import ru.practicum.shareit.exception.users.UserNotFoundException;
 import ru.practicum.shareit.exception.users.UserValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.ArrayList;
@@ -50,28 +51,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto updateUser(Long userId, Map<String, String> user) {
-        String name = null;
-        String email = null;
+    public UserDto updateUser(Long userId, UserDto user) {
         userValidation(userId);
-        if (user.containsKey("name")) {
-            if (!user.get("name").isBlank()) {
-                name = user.get("name");
-            } else {
+        if (user.getName() != null) {
+            if (user.getName().isBlank()) {
                 throw new UserValidationException("The name can't be empty");
             }
-
         }
-        if (user.containsKey("email") && !EmailValidator.getInstance().isValid(user.get("email"))) {
-            throw new UserValidationException("The email is incorrect");
-        }
-        if (user.containsKey("email") && EmailValidator.getInstance().isValid(user.get("email"))) {
-            email = user.get("email");
-            if (idEmails.containsValue(email)) {
-                throw new UserAlreadyExistException("A user with this email already exists");
+        if (user.getEmail() != null) {
+            if (user.getEmail().isBlank() || !EmailValidator.getInstance().isValid(user.getEmail())) {
+                throw new UserValidationException("The name can't be empty");
             }
         }
-        repository.updateUser(userId, name, email);
+        if (idEmails.containsValue(user.getEmail())) {
+            throw new UserAlreadyExistException("A user with this email already exists");
+        }
+        repository.updateUser(userId, user.getName(), user.getEmail());
         idEmails.put(userId, repository.getUserById(userId).getEmail());
         log.info("The user with id {} updated", userId);
         return getUserById(userId);
@@ -91,6 +86,11 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toUserDto(repository.getUserById(id));
     }
 
+    @Override
+    public User getUser(Long id) {
+        return repository.getUserById(id);
+    }
+
     //метод генерации id
     private long generateId() {
         return id++;
@@ -107,5 +107,4 @@ public class UserServiceImpl implements UserService {
         idEmails.clear();
         id = 1;
     }
-
 }

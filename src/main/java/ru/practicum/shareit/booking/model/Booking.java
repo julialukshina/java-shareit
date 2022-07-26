@@ -4,6 +4,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.model.User;
 
 import javax.validation.constraints.Future;
 import java.time.LocalDate;
@@ -19,16 +21,16 @@ public class Booking {
     private LocalDate start;
     @Future
     private LocalDate end;
-    private long itemId;
-    private long bookerId;
-    private BOOKINGSTATUS bookingStatus;
+    private Item item;
+    private User booker;
+    private BookingStatus bookingStatus;
 
-    public Booking(long id, LocalDate start, LocalDate end, long itemId, long bookerId, BOOKINGSTATUS bookingStatus) {
+    public Booking(long id, LocalDate start, LocalDate end, Item item, User booker, BookingStatus bookingStatus) {
         this.id = id;
         this.start = start;
         this.end = end;
-        this.itemId = itemId;
-        this.bookerId = bookerId;
+        this.item = item;
+        this.booker = booker;
         this.bookingStatus = bookingStatus;
     }
 }

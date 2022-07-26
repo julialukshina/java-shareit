@@ -4,6 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDate;
 
@@ -14,13 +15,13 @@ import java.time.LocalDate;
 public class ItemRequest {
     private long id;
     private String description;
-    private long creatorId;
+    private User creator;
     private LocalDate dateOfCreation;
 
-    public ItemRequest(long id, String description, long creatorId, LocalDate dateOfCreation) {
+    public ItemRequest(long id, String description, User creator, LocalDate dateOfCreation) {
         this.id = id;
         this.description = description;
-        this.creatorId = creatorId;
+        this.creator = creator;
         this.dateOfCreation = dateOfCreation;
     }
 }
