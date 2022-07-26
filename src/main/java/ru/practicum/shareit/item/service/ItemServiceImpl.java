@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.items.ItemNotFoundException;
 import ru.practicum.shareit.exception.items.ItemValidationException;
@@ -27,6 +28,10 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final Map<Long, List<Item>> usersItems = new HashMap<>();
 
+    @Lazy
+    @Autowired
+    private ItemMapper mapper;
+
     @Autowired
     public ItemServiceImpl(ItemRepository repository, UserRepository userRepository) {
         this.repository = repository;
@@ -36,7 +41,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> getAllItems() {
         return new ArrayList<>(repository.getAllItems().values()).stream()
-                .map(ItemMapper::toItemDto)
+                .map(mapper::toItemDto)
                 .collect(Collectors.toList());
     }
 
@@ -47,15 +52,15 @@ public class ItemServiceImpl implements ItemService {
         }
         itemDto.setId(generateId());
         itemDto.setOwnerId(userId);
-        repository.addItem(ItemMapper.toItem(itemDto));
+        repository.addItem(mapper.toItem(itemDto));
         if (usersItems.containsKey(userId)) {
-            usersItems.get(userId).add(ItemMapper.toItem(itemDto));
+            usersItems.get(userId).add(mapper.toItem(itemDto));
         } else {
             List<Item> items = new ArrayList<>();
-            items.add(ItemMapper.toItem(itemDto));
+            items.add(mapper.toItem(itemDto));
             usersItems.put(userId, items);
         }
-        log.info("The new item has been created: {}", ItemMapper.toItem(itemDto));
+        log.info("The new item has been created: {}", mapper.toItem(itemDto));
         return itemDto;
     }
 
@@ -86,7 +91,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto getItemById(Long itemId) {
         itemValidation(itemId);
-        return ItemMapper.toItemDto(repository.getItemById(itemId));
+        return mapper.toItemDto(repository.getItemById(itemId));
     }
 
     @Override
@@ -118,7 +123,7 @@ public class ItemServiceImpl implements ItemService {
             return new ArrayList<>();
         }
         return usersItems.get(userId).stream()
-                .map(ItemMapper::toItemDto)
+                .map(mapper::toItemDto)
                 .collect(Collectors.toList());
     }
 

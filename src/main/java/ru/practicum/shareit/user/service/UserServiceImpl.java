@@ -26,6 +26,7 @@ public class UserServiceImpl implements UserService {
     private final Map<Long, String> idEmails = new HashMap<>();
     private long id = 1;
 
+
     @Autowired
     public UserServiceImpl(UserRepository repository) {
         this.repository = repository;

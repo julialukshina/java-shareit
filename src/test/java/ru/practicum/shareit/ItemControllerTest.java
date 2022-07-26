@@ -15,7 +15,7 @@ import ru.practicum.shareit.item.controller.ItemController;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemServiceImpl;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,12 +45,17 @@ public class ItemControllerTest {
     @Autowired
     private ItemServiceImpl service;
     @Autowired
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @BeforeAll //перед всеми тестами в репозиторий пользователей добавляется два пользователя
     public void createUserObject() throws Exception {
-        userService.createNewUser(user1);
-        userService.createNewUser(user2);
+        userService.clear();
+        body = objectMapper.writeValueAsString(user1);
+        this.mockMvc.perform(post("/users").content(body).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+        body = objectMapper.writeValueAsString(user2);
+        this.mockMvc.perform(post("/users").content(body).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
     @BeforeEach //перед каздым тестом в репозиторий добавляется вещь

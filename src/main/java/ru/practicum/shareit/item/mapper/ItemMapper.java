@@ -1,28 +1,26 @@
 package ru.practicum.shareit.item.mapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.service.UserService;
 
+@Lazy
 @Component
 public class ItemMapper {
-    private static UserService userService;
-    private static ItemService itemService;
+    private final UserService userService;
+    private final ItemService itemService;
 
     @Autowired
-    public void setUserService(UserService userService) {
-        ItemMapper.userService = userService;
+    public ItemMapper(UserService userService, ItemService itemService) {
+        this.userService = userService;
+        this.itemService = itemService;
     }
 
-    @Autowired
-    public void setItemService(ItemService itemService) {
-        ItemMapper.itemService = itemService;
-    }
-
-    public static ItemDto toItemDto(Item item) {
+    public ItemDto toItemDto(Item item) {
         return new ItemDto(item.getId(),
                 item.getName(),
                 item.getDescription(),
@@ -32,7 +30,7 @@ public class ItemMapper {
         );
     }
 
-    public static Item toItem(ItemDto itemDto) {
+    public Item toItem(ItemDto itemDto) {
         return new Item(itemDto.getId(),
                 itemDto.getName(),
                 itemDto.getDescription(),
