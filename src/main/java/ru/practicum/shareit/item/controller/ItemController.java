@@ -25,6 +25,7 @@ public class ItemController {
     public ItemController(ItemService service) {
         this.service = service;
     }
+
     @Validated(OnCreate.class)
     @PostMapping //создает новую вещь
     public ItemDto createNewItem(@RequestHeader("X-Sharer-User-Id") long userId, @Valid @RequestBody ItemDto itemDto) {
