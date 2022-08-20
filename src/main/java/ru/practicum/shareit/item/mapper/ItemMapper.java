@@ -3,10 +3,13 @@ package ru.practicum.shareit.item.mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.service.UserService;
+
+import java.util.ArrayList;
 
 @Lazy
 @Component
@@ -26,7 +29,10 @@ public class ItemMapper {
                 item.getDescription(),
                 item.getAvailable(),
                 item.getOwner().getId(),
-                item.getRequest() != null ? item.getRequest().getId() : null
+//                item.getRequest() != null ? item.getRequest().getId() : null
+                null,
+                null,
+                new ArrayList<CommentDto>()
         );
     }
 
@@ -35,8 +41,8 @@ public class ItemMapper {
                 itemDto.getName(),
                 itemDto.getDescription(),
                 itemDto.getAvailable(),
-                userService.getUser(itemDto.getOwnerId()),
-                itemDto.getRequest() != null ? itemService.getItem(itemDto.getId()).getRequest() : null
+                userService.getUser(itemDto.getOwnerId())
+//                itemDto.getRequest() != null ? itemService.getItem(itemDto.getId()).getRequest() : null
         );
     }
 }

@@ -16,12 +16,12 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode
 public class UserDto {
     private long id;
-    @NotNull (groups = OnCreate.class)
-    @NotBlank (groups = OnCreate.class)
+    @NotNull(groups = OnCreate.class)
+    @NotBlank(groups = OnCreate.class)
     private String name;
-    @Email (groups = OnCreate.class)
-    @NotNull (groups = OnCreate.class)
-    @NotBlank (groups = OnCreate.class)
+    @Email(groups = OnCreate.class)
+    @NotNull(groups = OnCreate.class)
+    @NotBlank(groups = OnCreate.class)
     private String email;
 
     public UserDto(long id, String name, String email) {

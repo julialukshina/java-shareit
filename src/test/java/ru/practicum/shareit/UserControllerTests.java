@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.user.controller.UserController;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserServiceImpl;
@@ -31,11 +33,22 @@ public class UserControllerTests {
     private UserController userController;
     @Autowired
     private UserServiceImpl service;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @BeforeEach //перед каждым тестом в репозиторий добавляется пользователь
     public void createUserObject() throws Exception {
+        String sqlQuery = "ALTER TABLE requests ALTER COLUMN id RESTART WITH 1"; //скидываем счетчики
+        jdbcTemplate.update(sqlQuery);
+        sqlQuery = "ALTER TABLE comments ALTER COLUMN id RESTART WITH 1";
+        jdbcTemplate.update(sqlQuery);
+        sqlQuery = "ALTER TABLE bookings ALTER COLUMN id RESTART WITH 1";
+        jdbcTemplate.update(sqlQuery);
+        sqlQuery = "ALTER TABLE items ALTER COLUMN id RESTART WITH 1";
+        jdbcTemplate.update(sqlQuery);
+        sqlQuery = "ALTER TABLE users ALTER COLUMN id RESTART WITH 1";
+        jdbcTemplate.update(sqlQuery);
         user = new UserDto(1, "sasha", "sashaivanova@yandex.ru");
-        service.clear();
         body = objectMapper.writeValueAsString(user);
         this.mockMvc.perform(post("/users").content(body).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -44,12 +57,14 @@ public class UserControllerTests {
     }
 
     @Test
+    @Transactional
     public void getAllUsersTest() throws Exception {
         this.mockMvc.perform(get("/users"))
                 .andExpect(status().isOk());
     }
 
     @Test
+    @Transactional
     public void badCreateNewUserTest() throws Exception {
         user = new UserDto(1, "sasha", "sasha"); //некорректная почта
         body = objectMapper.writeValueAsString(user);
@@ -67,6 +82,7 @@ public class UserControllerTests {
     }
 
     @Test
+    @Transactional
     public void goodUpdateUserTest() throws Exception { //тест на корректное обновление объекта
         user.setName("Александра");
         body = "{\"name\": \"Александра\"}";
@@ -79,6 +95,7 @@ public class UserControllerTests {
     }
 
     @Test
+    @Transactional
     public void badUpdateUserTest() throws Exception { //тест на некорректное обновление объекта
         user.setEmail(""); //некорректное значение для email
         body = "{\"email\":\"\"}";
@@ -94,27 +111,31 @@ public class UserControllerTests {
         assertEquals(validUser.getName(), userController.getUserById(1L).getName());
     }
 
-    @Test//тест на корректное удаление объекта
+    @Test
+    @Transactional//тест на корректное удаление объекта
     public void goodDeleteUserTest() throws Exception {
         this.mockMvc.perform(delete("/users/1"))
                 .andExpect(status().isOk());
         assertEquals(0, userController.getAllUsers().size());
     }
 
-    @Test//тест на некорректное удаление объекта
+    @Test
+    @Transactional//тест на некорректное удаление объекта
     public void badDeleteUserTest() throws Exception {
         this.mockMvc.perform(delete("/users/100"))
                 .andExpect(status().isNotFound());
         assertEquals(1, userController.getAllUsers().size());
     }
 
-    @Test //тест на корректное получение объекта по id
+    @Test
+    @Transactional//тест на корректное получение объекта по id
     public void goodGetUserByIdTest() throws Exception {
         this.mockMvc.perform(get("/users/1"))
                 .andExpect(status().isOk());
     }
 
     @Test
+    @Transactional
     public void bedGetUserByIdTest() throws Exception { //тест на некорректное получение объекта по id
         this.mockMvc.perform(get("/users/100"))
                 .andExpect(status().isNotFound());

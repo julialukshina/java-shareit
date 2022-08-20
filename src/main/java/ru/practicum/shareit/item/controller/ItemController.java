@@ -6,8 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.OnCreate;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.ConstraintViolationException;
@@ -38,8 +39,8 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}") //возвращает вещь по Id
-    public ItemDto getItemById(@PathVariable Long itemId) {
-        return service.getItemById(itemId);
+    public ItemDto getItemById(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable Long itemId) {
+        return service.getItemById(userId, itemId);
     }
 
     @DeleteMapping("/{itemId}") //удаляет вещь
@@ -55,6 +56,12 @@ public class ItemController {
     @GetMapping //возвращает список вещей пользователя
     public List<ItemDto> getItemsOfUser(@RequestHeader("X-Sharer-User-Id") long userId) {
         return service.getItemsOfUser(userId);
+    }
+
+    @PostMapping("/{itemId}/comment") //добавление комментария
+    public CommentDto createNewComment(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId,
+                                       @Valid @RequestBody CommentDto commentDto) {
+        return service.createNewComment(userId, itemId, commentDto);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
