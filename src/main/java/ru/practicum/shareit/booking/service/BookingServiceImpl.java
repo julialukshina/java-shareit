@@ -106,20 +106,84 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllForBooker(long userId, State state) { //возвращает все бронирования для создателя бронирований
+    public List<BookingDto> getAllForBooker(long userId, String state) { //возвращает все бронирования для создателя бронирований
         userValidation(userId);
+        LocalDateTime now = LocalDateTime.now();
         List<Booking> bookings = repository.findByBookerId(userId);
-        return sortedBookingList(bookings, state);
+        try {
+            State s = State.valueOf(state);
+        } catch (IllegalArgumentException e) {
+            e.getMessage();
+        }
+        switch (State.valueOf(state)) {
+            case ALL:
+                return repository.findAllByBookerIdOrderByStartDesc(userId).stream()
+                        .map(mapper::toBookingDto)
+                        .collect(Collectors.toList());
+            case CURRENT:
+                return repository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, now, now).stream()
+                        .map(mapper::toBookingDto)
+                        .collect(Collectors.toList());
+            case PAST:
+                return repository.findAllByBookerIdAndEndBeforeOrderByStartDesc(userId, now).stream()
+                        .map(mapper::toBookingDto)
+                        .collect(Collectors.toList());
+            case FUTURE:
+                return repository.findAllByBookerIdAndStartAfterOrderByStartDesc(userId, now).stream()
+                        .map(mapper::toBookingDto)
+                        .collect(Collectors.toList());
+            case WAITING:
+                return repository.findAllByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING).stream()
+                        .map(mapper::toBookingDto)
+                        .collect(Collectors.toList());
+            case REJECTED:
+                return repository.findAllByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED).stream()
+                        .map(mapper::toBookingDto)
+                        .collect(Collectors.toList());
+        }
+        return null;
     }
 
     @Override
-    public List<BookingDto> getAllForOwner(long userId, State state) { //возвращает все бронирования для собственника вещей
+    public List<BookingDto> getAllForOwner(long userId, String state) { //возвращает все бронирования для собственника вещей
         userValidation(userId);
-        if (repository.getBookingsForItemOwner(userId).isEmpty()) {
+        LocalDateTime now = LocalDateTime.now();
+        List<Booking> bookings = repository.getBookingsByItemOwnerId(userId);
+        if (bookings.isEmpty()) {
             throw new NotOwnerException("This user is not the owner for any item");
         }
-        List<Booking> bookings = repository.getBookingsForItemOwner(userId);
-        return sortedBookingList(bookings, state);
+        try {
+            State s = State.valueOf(state);
+        } catch (IllegalArgumentException e) {
+            e.getMessage();
+        }
+        switch (State.valueOf(state)) {
+            case ALL:
+                return repository.findAllByItemOwnerIdOrderByStartDesc(userId).stream()
+                        .map(mapper::toBookingDto)
+                        .collect(Collectors.toList());
+            case CURRENT:
+                return repository.findAllByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, now, now).stream()
+                        .map(mapper::toBookingDto)
+                        .collect(Collectors.toList());
+            case PAST:
+                return repository.findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(userId, now).stream()
+                        .map(mapper::toBookingDto)
+                        .collect(Collectors.toList());
+            case FUTURE:
+                return repository.findAllByItemOwnerIdAndStartAfterOrderByStartDesc(userId, now).stream()
+                        .map(mapper::toBookingDto)
+                        .collect(Collectors.toList());
+            case WAITING:
+                return repository.findAllByItemOwnerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING).stream()
+                        .map(mapper::toBookingDto)
+                        .collect(Collectors.toList());
+            case REJECTED:
+                return repository.findAllByItemOwnerIdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED).stream()
+                        .map(mapper::toBookingDto)
+                        .collect(Collectors.toList());
+        }
+        return null;
     }
 
 
@@ -139,54 +203,5 @@ public class BookingServiceImpl implements BookingService {
         if (userRepository.findById(userId).isEmpty()) {
             throw new UserNotFoundException("This user is not found");
         }
-    }
-
-    private List<BookingDto> sortedBookingList(List<Booking> b, State state) { /*заполняет поля последнего и ближайщего
-         следующего бронирования и возвращает сортированный список бронирований */
-        LocalDateTime now = LocalDateTime.now();
-        if (state == State.ALL) {
-            return b.stream()
-                    .map(mapper::toBookingDto)
-                    .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()))
-                    .collect(Collectors.toList());
-        }
-        if (state == State.CURRENT) {
-            return b.stream()
-                    .map(mapper::toBookingDto)
-                    .filter(bookingDto -> bookingDto.getStart().isBefore(now))
-                    .filter(bookingDto -> bookingDto.getEnd().isAfter(now))
-                    .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()))
-                    .collect(Collectors.toList());
-
-        }
-        if (state == State.PAST) {
-            return b.stream()
-                    .map(mapper::toBookingDto)
-                    .filter(bookingDto -> bookingDto.getEnd().isBefore(now))
-                    .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()))
-                    .collect(Collectors.toList());
-        }
-        if (state == State.FUTURE) {
-            return b.stream()
-                    .map(mapper::toBookingDto)
-                    .filter(bookingDto -> bookingDto.getStart().isAfter(now))
-                    .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()))
-                    .collect(Collectors.toList());
-        }
-        if (state == State.WAITING) {
-            return b.stream()
-                    .map(mapper::toBookingDto)
-                    .filter(bookingDto -> bookingDto.getStatus() == BookingStatus.WAITING)
-                    .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()))
-                    .collect(Collectors.toList());
-        }
-        if (state == State.REJECTED) {
-            return b.stream()
-                    .map(mapper::toBookingDto)
-                    .filter(bookingDto -> bookingDto.getStatus() == BookingStatus.REJECTED)
-                    .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()))
-                    .collect(Collectors.toList());
-        }
-        return null;
     }
 }

@@ -2,13 +2,11 @@ package ru.practicum.shareit.booking.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
-import ru.practicum.shareit.booking.model.State;
 import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
@@ -44,20 +42,20 @@ public class BookingController {
 
     @GetMapping //возвращает все бронирования для создателя бронирований
     public List<BookingDto> getAllForBooker(@RequestHeader("X-Sharer-User-Id") long userId, @RequestParam(name = "state",
-            defaultValue = "ALL") State state) {
+            defaultValue = "ALL") String state) {
         return service.getAllForBooker(userId, state);
     }
 
     @GetMapping("/owner") //возвращает все бронирования для собственника вещей
     public List<BookingDto> getAllForOwner(@RequestHeader("X-Sharer-User-Id") long userId, @RequestParam(name = "state",
-            defaultValue = "ALL") State state) {
+            defaultValue = "ALL") String state) {
         return service.getAllForOwner(userId, state);
     }
 
 
-    @ExceptionHandler(ConversionFailedException.class)
+    @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<String> handleConstraintViolationException(ConversionFailedException e) {
+    public ResponseEntity<String> handleConstraintViolationException(IllegalArgumentException e) {
         return new ResponseEntity<>("{\"error\": \"Unknown state: UNSUPPORTED_STATUS\"}",
                 HttpStatus.BAD_REQUEST);
     }
