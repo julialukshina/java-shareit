@@ -3,12 +3,16 @@ package ru.practicum.shareit.item.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.MyPageable;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.mapper.BookingForItemDtoMapper;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.exception.ParamException;
 import ru.practicum.shareit.exception.bookings.BookingValidateException;
+import ru.practicum.shareit.exception.itemRequests.ItemRequestNotFoundException;
 import ru.practicum.shareit.exception.items.ItemNotFoundException;
 import ru.practicum.shareit.exception.items.ItemValidationException;
 import ru.practicum.shareit.exception.items.NotOwnerException;
@@ -21,11 +25,11 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.requests.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +40,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository repository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Lazy
     @Autowired
@@ -49,21 +54,28 @@ public class ItemServiceImpl implements ItemService {
     private BookingForItemDtoMapper bookingForItemDtoMapper;
 
     @Autowired
-    public ItemServiceImpl(UserRepository userRepository, ItemRepository repository, BookingRepository bookingRepository, CommentRepository commentRepository) {
+    public ItemServiceImpl(UserRepository userRepository, ItemRepository repository, BookingRepository bookingRepository,
+                           CommentRepository commentRepository, ItemRequestRepository itemRequestRepository) {
         this.userRepository = userRepository;
         this.repository = repository;
         this.bookingRepository = bookingRepository;
         this.commentRepository = commentRepository;
+        this.itemRequestRepository = itemRequestRepository;
     }
 
     @Override
     public List<ItemDto> getAllItems() {
-        return new ArrayList<>((Collection) repository.findAll());
+        return repository.findAll().stream()
+                .map(mapper::toItemDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public ItemDto createNewItem(long userId, ItemDto itemDto) {
         userValidation(userId);
+        if (itemDto.getRequestId() != null) {
+            itemRequestValidation(itemDto.getRequestId());
+        }
         itemDto.setOwnerId(userId);
         ItemDto dto = mapper.toItemDto(repository.save(mapper.toItem(itemDto)));
         log.info("The new item has been created: {}", dto);
@@ -123,19 +135,27 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getSearchableItem(String text) {
+    public List<ItemDto> getSearchableItem(String text, int from, int size) {
+        if (from < 0 || size <= 0) {
+            throw new ParamException("Param 'from' can't be negative, param 'size' can't be 0 or negative");
+        }
+        Pageable pageable = MyPageable.of(from, size);
         if (text.isBlank()) {
             return new ArrayList<>();
         }
-        return repository.search(text).stream()
+        return repository.search(text, pageable).stream()
                 .map(item -> mapper.toItemDto(item))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ItemDto> getItemsOfUser(long userId) {
+    public List<ItemDto> getItemsOfUser(long userId, int from, int size) {
         userValidation(userId);
-        return repository.findByOwnerId(userId).stream()
+        if (from < 0 || size <= 0) {
+            throw new ParamException("Param 'from' can't be negative, param 'size' can't be 0 or negative");
+        }
+        Pageable pageable = MyPageable.of(from, size);
+        return repository.findByOwnerId(userId, pageable).stream()
                 .map(mapper::toItemDto)
                 .map(this::fillBookingInItemDto)
                 .map(this::fillCommentsToItemDto)
@@ -152,6 +172,12 @@ public class ItemServiceImpl implements ItemService {
     private void userValidation(long userId) {
         if (userRepository.findById(userId).isEmpty()) {
             throw new UserNotFoundException("This user is not found");
+        }
+    }
+
+    private void itemRequestValidation(long id) {
+        if (itemRequestRepository.findById(id).isEmpty()) {
+            throw new ItemRequestNotFoundException("This itemRequest is not found");
         }
     }
 

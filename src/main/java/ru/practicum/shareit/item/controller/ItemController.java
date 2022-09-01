@@ -49,13 +49,15 @@ public class ItemController {
     }
 
     @GetMapping("/search") //поиск вещей
-    public List<ItemDto> getSearchableItem(@RequestParam String text) { //возвращаем список искомых вещей
-        return service.getSearchableItem(text);
+    public List<ItemDto> getSearchableItem(@RequestParam String text, @RequestParam(name = "from", defaultValue = "0") int from,
+                                           @RequestParam(name = "size", defaultValue = "10") int size) { //возвращаем список искомых вещей
+        return service.getSearchableItem(text, from, size);
     }
 
     @GetMapping //возвращает список вещей пользователя
-    public List<ItemDto> getItemsOfUser(@RequestHeader("X-Sharer-User-Id") long userId) {
-        return service.getItemsOfUser(userId);
+    public List<ItemDto> getItemsOfUser(@RequestHeader("X-Sharer-User-Id") long userId, @RequestParam(name = "from", defaultValue = "0") int from,
+                                        @RequestParam(name = "size", defaultValue = "10") int size) {
+        return service.getItemsOfUser(userId, from, size);
     }
 
     @PostMapping("/{itemId}/comment") //добавление комментария

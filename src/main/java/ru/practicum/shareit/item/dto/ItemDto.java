@@ -22,7 +22,7 @@ public class ItemDto {
     @NotNull(groups = OnCreate.class)
     private Boolean available;
     private long ownerId;
-    //    private Long request;
+    private Long requestId;
     private BookingDtoForItemDto lastBooking;
     private BookingDtoForItemDto nextBooking;
     private List<CommentDto> comments;

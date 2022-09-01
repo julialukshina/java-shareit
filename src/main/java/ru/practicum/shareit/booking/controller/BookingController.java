@@ -42,14 +42,16 @@ public class BookingController {
 
     @GetMapping //возвращает все бронирования для создателя бронирований
     public List<BookingDto> getAllForBooker(@RequestHeader("X-Sharer-User-Id") long userId, @RequestParam(name = "state",
-            defaultValue = "ALL") String state) {
-        return service.getAllForBooker(userId, state);
+            defaultValue = "ALL") String state, @RequestParam(name = "from", defaultValue = "0") int from,
+                                            @RequestParam(name = "size", defaultValue = "10") int size) {
+        return service.getAllForBooker(userId, state, from, size);
     }
 
     @GetMapping("/owner") //возвращает все бронирования для собственника вещей
     public List<BookingDto> getAllForOwner(@RequestHeader("X-Sharer-User-Id") long userId, @RequestParam(name = "state",
-            defaultValue = "ALL") String state) {
-        return service.getAllForOwner(userId, state);
+            defaultValue = "ALL") String state, @RequestParam(name = "from", defaultValue = "0") int from,
+                                           @RequestParam(name = "size", defaultValue = "10") int size) {
+        return service.getAllForOwner(userId, state, from, size);
     }
 
 

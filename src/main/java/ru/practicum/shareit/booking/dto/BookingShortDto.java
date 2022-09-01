@@ -1,9 +1,6 @@
 package ru.practicum.shareit.booking.dto;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import javax.validation.constraints.FutureOrPresent;
 import java.time.LocalDateTime;
@@ -12,10 +9,14 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 @EqualsAndHashCode
+@AllArgsConstructor
 public class BookingShortDto {
     @FutureOrPresent
     private LocalDateTime start;
     private LocalDateTime end;
     private long itemId;
 
+    public BookingShortDto() {
+
+    }
 }
