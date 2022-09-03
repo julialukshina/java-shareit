@@ -47,12 +47,10 @@ public class BookingControllerTests {
     private String body;
     private final UserDto user1 = new UserDto(1L, "sasha", "ivanova@yandex.ru");
     private UserDto user2 = new UserDto(2L, "masha", "mashaivanova@yandex.ru");
-    ;
     private final ItemDto item1 = new ItemDto(1L, "Стол", "Журнальный стол", true, 1L, null,
             null, null, new ArrayList<CommentDto>());
     private ItemDto item2 = new ItemDto(2L, "Стул", "Офисный стул", true, 1L, null,
             null, null, new ArrayList<CommentDto>());
-    ;
     private BookingShortDto shortDto;
     private LocalDateTime now = LocalDateTime.now();
     private BookingDto dto = new BookingDto(1L, now.plusMinutes(2), now.plusMinutes(4), item1, user2, BookingStatus.WAITING);

@@ -24,10 +24,8 @@ import java.util.stream.Collectors;
 public class BookingRepositoryTest {
     @Autowired
     TestEntityManager em;
-
     @Autowired
     BookingRepository bookingRepository;
-
     private final User user = new User();
     private final User user1 = new User();
     private final Item item = new Item();
@@ -39,31 +37,24 @@ public class BookingRepositoryTest {
         user.setName("Tom");
         user.setEmail("Tom@gmail.com");
         em.persist(user);
-
         item.setName("test");
         item.setDescription("description");
         item.setAvailable(true);
         item.setOwner(user);
         em.persist(item);
-
         user1.setName("Tim");
         user1.setEmail("Tim@mail.com");
-
         em.persist(user1);
-
         booking.setStart(LocalDateTime.now().plusDays(2));
         booking.setEnd(LocalDateTime.now().plusDays(5));
-
         booking.setItem(item);
         booking.setBooker(user1);
         booking.setStatus(BookingStatus.APPROVED);
-
         em.persist(booking);
     }
 
     @Test
     void findAllByOwnerIdOrderByEndDesc() {
-
         List<Booking> bookings = bookingRepository.findAllByItemOwnerIdOrderByStartDesc(user.getId(), pageable).stream().collect(Collectors.toList());
         Assertions.assertEquals(1, bookings.size());
         Assertions.assertEquals(booking, bookings.get(0));
@@ -71,7 +62,6 @@ public class BookingRepositoryTest {
 
     @Test
     void findAllByOwnerIdAndStatusOrderByEndDesc() {
-
         List<Booking> bookings = bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(user.getId(),
                 BookingStatus.APPROVED, pageable).stream().collect(Collectors.toList());
         Assertions.assertEquals(1, bookings.size());
@@ -80,7 +70,6 @@ public class BookingRepositoryTest {
 
     @Test
     void findAllByBookerIdOrderByStartDesc() {
-        System.out.println(user1.getId());
         List<Booking> bookings = bookingRepository.findAllByBookerIdOrderByStartDesc(user1.getId(), pageable).stream().collect(Collectors.toList());
         Assertions.assertEquals(1, bookings.size());
         Assertions.assertEquals(booking, bookings.get(0));
@@ -88,7 +77,6 @@ public class BookingRepositoryTest {
 
     @Test
     void findAllByBookerIdAndStatusOrderByStartDesc() {
-
         List<Booking> bookings = bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(user1.getId(),
                 BookingStatus.APPROVED, pageable).stream().collect(Collectors.toList());
         Assertions.assertEquals(1, bookings.size());
