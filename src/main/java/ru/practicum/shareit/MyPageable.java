@@ -17,29 +17,12 @@ public class MyPageable implements Pageable {
     }
 
     public static Pageable of(Integer from, Integer size) {
-//        if (from == null && size == null) {
-//            from = 0;
-//            size = DEFAULT_PAGE_SIZE;
-//        }
-//        validateOrThrowException(from, size);
         return new MyPageable(from, size, Sort.unsorted());
     }
 
     public static Pageable of(Integer from, Integer size, Sort sort) {
-//        if (from == null && size == null) {
-//            from = 0;
-//            size = DEFAULT_PAGE_SIZE;
-//        }
-//        validateOrThrowException(from, size);
         return new MyPageable(from, size, sort);
     }
-
-//    private static void validateOrThrowException(Integer from, Integer size) {
-//        if (size < 1 || from < 0) {
-//            throw new ValidationException("size must be positive and from must be more then 0");
-//        }
-//    }
-
 
     @Override
     public int getPageNumber() {

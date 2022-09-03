@@ -12,11 +12,11 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.requests.dto.ItemRequestDto;
 import ru.practicum.shareit.requests.dto.ItemRequestShortDto;
 import ru.practicum.shareit.requests.mapper.ItemRequestMapper;
+import ru.practicum.shareit.requests.model.ItemRequest;
 import ru.practicum.shareit.requests.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 
@@ -47,11 +47,6 @@ public class ItemRequestTests {
     private ItemRequestMapper mapper;
     private final UserDto user1 = new UserDto(1L, "sasha", "ivanova@yandex.ru");
     private final UserDto user2 = new UserDto(2L, "masha", "mashaivanova@yandex.ru");
-    ;
-    private final ItemDto item1 = new ItemDto(1L, "Стол", "Журнальный стол", true, 1L, null,
-            null, null, new ArrayList<CommentDto>());
-    private final ItemDto item2 = new ItemDto(2L, "Стул", "Офисный стул", true, 1L, null,
-            null, null, new ArrayList<CommentDto>());
     LocalDateTime now = LocalDateTime.now();
     private final ItemRequestDto dto = new ItemRequestDto(1L, "дрель для смолы", 1L, now.plusMinutes(2),
             new ArrayList<ItemDto>());
@@ -74,12 +69,6 @@ public class ItemRequestTests {
         body = objectMapper.writeValueAsString(user2);
         this.mockMvc.perform(post("/users").content(body).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-//        body = objectMapper.writeValueAsString(item1);
-//        this.mockMvc.perform(post("/items").header("X-Sharer-User-Id", 1L)
-//                .content(body).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
-//        body = objectMapper.writeValueAsString(item2);
-//        this.mockMvc.perform(post("/items").header("X-Sharer-User-Id", 1L)
-//                .content(body).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
     }
 
     @Transactional
@@ -129,7 +118,6 @@ public class ItemRequestTests {
         this.mockMvc.perform(get("/requests/all?from=0&size=1").header("X-Sharer-User-Id", 2L))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(requestsForUser2)));
-
         this.mockMvc.perform(get("/requests/all?from=0&size=0").header("X-Sharer-User-Id", 2L))
                 .andExpect(status().isBadRequest());
         this.mockMvc.perform(get("/requests/all?from=-1&size=1").header("X-Sharer-User-Id", 2L))
@@ -165,6 +153,9 @@ public class ItemRequestTests {
         body = objectMapper.writeValueAsString(shortDto);
         this.mockMvc.perform(post("/requests").header("X-Sharer-User-Id", 1L)
                 .content(body).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+        ItemRequest request = repository.findById(1L).get();
+        request.setCreated(now.minusMinutes(1));
+        repository.save(request);
         requests.add(mapper.toItemRequestDto(repository.findById(1L).get()));
         shortDto.setDescription("платье на выпускной");
         body = objectMapper.writeValueAsString(shortDto);

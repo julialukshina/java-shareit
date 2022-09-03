@@ -13,7 +13,6 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.model.State;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.exception.ParamException;
 import ru.practicum.shareit.exception.bookings.BookerException;
 import ru.practicum.shareit.exception.bookings.BookingNotFoundException;
 import ru.practicum.shareit.exception.bookings.BookingValidateException;
@@ -21,6 +20,7 @@ import ru.practicum.shareit.exception.items.NotOwnerException;
 import ru.practicum.shareit.exception.items.OwnerException;
 import ru.practicum.shareit.exception.users.UserNotFoundException;
 import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.repository.UserRepository;
@@ -53,20 +53,21 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto createNewBooking(long userId, BookingShortDto shortDto) { //создание нового бронирования
         userValidation(userId);
         itemValidation(shortDto.getItemId());
-        if (itemRepository.findById(shortDto.getItemId()).get().getAvailable() == false) {
-            throw new BookingValidateException("Only available item can be booked");
+        Item item = itemRepository.findById(shortDto.getItemId()).get();
+        if (item.getAvailable() == false) {
+            throw new BookingValidateException("Only available item can be brooked");
         }
         if (shortDto.getStart().isAfter(shortDto.getEnd())) {
             throw new BookingValidateException("The end of booking can not be before it's start");
         }
-        if (userId == itemRepository.findById(shortDto.getItemId()).get().getOwner().getId()) {
+        if (userId == item.getOwner().getId()) {
             throw new OwnerException("The owner can not book his item");
         }
 
         BookingDto dto = BookingDto.builder()
                 .start(shortDto.getStart())
                 .end(shortDto.getEnd())
-                .item(itemMapper.toItemDto(itemRepository.findById(shortDto.getItemId()).get()))
+                .item(itemMapper.toItemDto(item))
                 .booker(UserMapper.toUserDto(userRepository.findById(userId).get()))
                 .status(BookingStatus.WAITING)
                 .build();
@@ -102,19 +103,17 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto getBookingById(long userId, Long bookingId) { //получение брнирования по id
         userValidation(userId);
         bookingValidation(bookingId);
-        if (userId != repository.findById(bookingId).get().getItem().getOwner().getId() &&
-                userId != repository.findById(bookingId).get().getBooker().getId()) {
+        Booking booking = repository.findById(bookingId).get();
+        if (userId != booking.getItem().getOwner().getId() &&
+                userId != booking.getBooker().getId()) {
             throw new BookerException("Booking can get only by the owner or the booker");
         }
-        return mapper.toBookingDto(repository.findById(bookingId).get());
+        return mapper.toBookingDto(booking);
     }
 
     @Override
     public List<BookingDto> getAllForBooker(long userId, String state, int from, int size) { //возвращает все бронирования для создателя бронирований
         userValidation(userId);
-        if (from < 0 || size <= 0) {
-            throw new ParamException("Param 'from' can't be negative, param 'size' can't be 0 or negative");
-        }
         Pageable pageable = MyPageable.of(from, size);
         LocalDateTime now = LocalDateTime.now();
         try {
@@ -154,9 +153,6 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingDto> getAllForOwner(long userId, String state, int from, int size) { //возвращает все бронирования для собственника вещей
         userValidation(userId);
-        if (from < 0 || size <= 0) {
-            throw new ParamException("Param 'from' can't be negative, param 'size' can't be 0 or negative");
-        }
         Pageable pageable = MyPageable.of(from, size);
         LocalDateTime now = LocalDateTime.now();
         List<Booking> bookings = repository.getBookingsByItemOwnerId(userId);

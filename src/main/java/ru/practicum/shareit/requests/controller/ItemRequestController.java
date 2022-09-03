@@ -12,6 +12,8 @@ import ru.practicum.shareit.requests.service.ItemRequestService;
 
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -38,8 +40,10 @@ public class ItemRequestController {
     }
 
     @GetMapping("/all") //возвращает список всех чужих запросов
-    public List<ItemRequestDto> getAllItemRequests(@RequestHeader("X-Sharer-User-Id") long userId, @RequestParam(name = "from",
-            defaultValue = "0") int from, @RequestParam(name = "size", defaultValue = "10") int size) {
+    public List<ItemRequestDto> getAllItemRequests(@RequestHeader("X-Sharer-User-Id") long userId,
+                                                   @RequestParam(name = "from", defaultValue = "0")
+                                                   @PositiveOrZero int from, @RequestParam(name = "size",
+            defaultValue = "10") @Positive int size) {
         return service.getAllItemRequests(userId, from, size);
     }
 

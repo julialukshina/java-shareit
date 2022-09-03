@@ -7,7 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.MyPageable;
-import ru.practicum.shareit.exception.ParamException;
 import ru.practicum.shareit.exception.itemRequests.ItemRequestNotFoundException;
 import ru.practicum.shareit.exception.users.UserNotFoundException;
 import ru.practicum.shareit.item.mapper.ItemMapper;
@@ -70,9 +69,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public List<ItemRequestDto> getAllItemRequests(long userId, int from, int size) {
         userValidation(userId);
-        if (from < 0 || size <= 0) {
-            throw new ParamException("Param 'from' can't be negative, param 'size' can't be 0 or negative");
-        }
         Pageable pageable = MyPageable.of(from, size, Sort.by(Sort.Direction.DESC, "created"));
         return repository.findAllByRequesterIdNot(userId, pageable).stream()
                 .map(mapper::toItemRequestDto)

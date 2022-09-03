@@ -13,6 +13,8 @@ import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -49,14 +51,16 @@ public class ItemController {
     }
 
     @GetMapping("/search") //поиск вещей
-    public List<ItemDto> getSearchableItem(@RequestParam String text, @RequestParam(name = "from", defaultValue = "0") int from,
-                                           @RequestParam(name = "size", defaultValue = "10") int size) { //возвращаем список искомых вещей
+    public List<ItemDto> getSearchableItem(@RequestParam String text,
+                                           @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero int from,
+                                           @RequestParam(name = "size", defaultValue = "10") @Positive int size) { //возвращаем список искомых вещей
         return service.getSearchableItem(text, from, size);
     }
 
     @GetMapping //возвращает список вещей пользователя
-    public List<ItemDto> getItemsOfUser(@RequestHeader("X-Sharer-User-Id") long userId, @RequestParam(name = "from", defaultValue = "0") int from,
-                                        @RequestParam(name = "size", defaultValue = "10") int size) {
+    public List<ItemDto> getItemsOfUser(@RequestHeader("X-Sharer-User-Id") long userId,
+                                        @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero int from,
+                                        @RequestParam(name = "size", defaultValue = "10") @Positive int size) {
         return service.getItemsOfUser(userId, from, size);
     }
 

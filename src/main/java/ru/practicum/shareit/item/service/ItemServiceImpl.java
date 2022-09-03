@@ -9,8 +9,8 @@ import ru.practicum.shareit.MyPageable;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.mapper.BookingForItemDtoMapper;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.exception.ParamException;
 import ru.practicum.shareit.exception.bookings.BookingValidateException;
 import ru.practicum.shareit.exception.itemRequests.ItemRequestNotFoundException;
 import ru.practicum.shareit.exception.items.ItemNotFoundException;
@@ -136,9 +136,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> getSearchableItem(String text, int from, int size) {
-        if (from < 0 || size <= 0) {
-            throw new ParamException("Param 'from' can't be negative, param 'size' can't be 0 or negative");
-        }
         Pageable pageable = MyPageable.of(from, size);
         if (text.isBlank()) {
             return new ArrayList<>();
@@ -151,9 +148,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> getItemsOfUser(long userId, int from, int size) {
         userValidation(userId);
-        if (from < 0 || size <= 0) {
-            throw new ParamException("Param 'from' can't be negative, param 'size' can't be 0 or negative");
-        }
         Pageable pageable = MyPageable.of(from, size);
         return repository.findByOwnerId(userId, pageable).stream()
                 .map(mapper::toItemDto)
@@ -169,7 +163,7 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    private void userValidation(long userId) {
+    public void userValidation(long userId) {
         if (userRepository.findById(userId).isEmpty()) {
             throw new UserNotFoundException("This user is not found");
         }
@@ -191,12 +185,12 @@ public class ItemServiceImpl implements ItemService {
         itemValidation(itemId);
         userValidation(userId);
         LocalDateTime now = LocalDateTime.now();
-        if (bookingRepository.findAllByItemId(itemId).isEmpty() ||
-                bookingRepository.findAllByItemId(itemId).stream()
-                        .noneMatch(booking -> booking.getBooker().getId() == userId)) {
+        List<Booking> bookings = bookingRepository.findAllByItemId(itemId);
+        if (bookings.isEmpty() || bookings.stream()
+                .noneMatch(booking -> booking.getBooker().getId() == userId)) {
             throw new BookingValidateException("You can not post a comment, because you don't book this item");
         }
-        if (bookingRepository.findAllByItemId(itemId).stream()
+        if (bookings.stream()
                 .filter(booking -> booking.getBooker().getId() == userId)
                 .noneMatch(booking -> booking.getEnd().isBefore(now))) {
             throw new BookingValidateException("You can not post a comment, because your booking of this item is not over yet");
@@ -233,5 +227,9 @@ public class ItemServiceImpl implements ItemService {
                     .collect(Collectors.toList()));
         }
         return itemDto;
+    }
+
+    public void setMapper(ItemMapper mapper) {
+        this.mapper = mapper;
     }
 }
