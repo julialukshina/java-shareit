@@ -48,13 +48,16 @@ public class BookingRepositoryTest {
 
         user1.setName("Tim");
         user1.setEmail("Tim@mail.com");
+
         em.persist(user1);
 
         booking.setStart(LocalDateTime.now().plusDays(2));
         booking.setEnd(LocalDateTime.now().plusDays(5));
+
         booking.setItem(item);
         booking.setBooker(user1);
         booking.setStatus(BookingStatus.APPROVED);
+
         em.persist(booking);
     }
 
