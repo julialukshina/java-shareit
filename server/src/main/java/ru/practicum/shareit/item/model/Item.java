@@ -7,8 +7,6 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "items")
@@ -22,13 +20,10 @@ public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @NotBlank
     @Column(name = "name", nullable = false)
     private String name;
-    @NotBlank
     @Column(name = "description", nullable = false)
     private String description;
-    @NotNull
     @Column(name = "available", nullable = false)
     private Boolean available;
     @ManyToOne

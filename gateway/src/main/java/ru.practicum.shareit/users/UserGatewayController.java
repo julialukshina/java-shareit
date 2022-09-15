@@ -2,11 +2,13 @@ package ru.practicum.shareit.users;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.OnCreate;
+import ru.practicum.shareit.exeptions.UserValidationException;
 import ru.practicum.shareit.users.dto.UserGatewayDto;
 
 import javax.validation.ConstraintViolationException;
@@ -33,6 +35,16 @@ public class UserGatewayController {
 
     @PatchMapping("/{userId}")//обновляет данные пользователя
     public ResponseEntity<Object> patchUser(@PathVariable Long userId, @RequestBody UserGatewayDto userGatewayDto) {
+        if (userGatewayDto.getName() != null) {
+            if (userGatewayDto.getName().isBlank()) {
+                throw new UserValidationException("The name can't be empty");
+            }
+        }
+        if (userGatewayDto.getEmail() != null) {
+            if (userGatewayDto.getEmail().isBlank() || !EmailValidator.getInstance().isValid(userGatewayDto.getEmail())) {
+                throw new UserValidationException("The email can't be empty");
+            }
+        }
         return userClient.updateUser(userId, userGatewayDto);
     }
 

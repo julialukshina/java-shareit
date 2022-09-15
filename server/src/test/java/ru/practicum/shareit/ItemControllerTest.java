@@ -114,22 +114,6 @@ public class ItemControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
         assertEquals(1, service.getAllItems().size());
-        //некорректное имя
-        item1 = new ItemDto(2L, "", "Журнальный стол", true, 1, null, null,
-                null, new ArrayList<CommentDto>());
-        body = objectMapper.writeValueAsString(item1);
-        badCreate(body);
-        //некорректное описание
-        item1 = new ItemDto(2L, "Стол", "", true, 1, null, null,
-                null, new ArrayList<CommentDto>());
-        body = objectMapper.writeValueAsString(item1);
-        badCreate(body);
-        //некорректный статус
-        item1 = new ItemDto(2L, "Стол", "Журнальный стол", true, 1, null, null,
-                null, new ArrayList<CommentDto>());
-        item1.setAvailable(null);
-        body = objectMapper.writeValueAsString(item1);
-        badCreate(body);
     }
 
     @Transactional
@@ -219,7 +203,7 @@ public class ItemControllerTest {
     @Test
     public void goodSearchTest() throws Exception {
         List<ItemDto> items = new ArrayList<>();
-        this.mockMvc.perform(get("/items/search?text=дом"))
+        this.mockMvc.perform(get("/items/search?text=дом&from=0&size=20"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(items)));
         item1 = new ItemDto(1L, "Стол", "Журнальный стол", true, 1, null, null,
@@ -230,7 +214,7 @@ public class ItemControllerTest {
         items.add(item1);
         body = objectMapper.writeValueAsString(item1);
         goodCreate(body);
-        this.mockMvc.perform(get("/items/search?text=стОл"))
+        this.mockMvc.perform(get("/items/search?text=стОл&from=0&size=20"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(items)));
         this.mockMvc.perform(get("/items/search?text=стОл&from=0&size=20"))
@@ -240,42 +224,22 @@ public class ItemControllerTest {
         body = objectMapper.writeValueAsString(item1);
         goodUpdate(body);
         items.remove(1);
-        this.mockMvc.perform(get("/items/search?text=стОл"))
+        this.mockMvc.perform(get("/items/search?text=стОл&from=0&size=20"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(items)));
-        this.mockMvc.perform(get("/items/search?text="))
-                .andExpect(status().isOk());
-    }
-
-    @Transactional
-    @Test
-    public void badSearchTest() throws Exception {
-        List<ItemDto> items = new ArrayList<>();
-        item1 = new ItemDto(2L, "Стул", "Обеденнный стол", true, 1, null, null,
-                null, new ArrayList<CommentDto>());
-        items.add(item1);
-        body = objectMapper.writeValueAsString(item1);
-        goodCreate(body);
-        this.mockMvc.perform(get("/items/search?text=стОл&from=-1&size=20"))
-                .andExpect(status().isBadRequest());
-        this.mockMvc.perform(get("/items/search?text=стОл&from=0&size=0"))
-                .andExpect(status().isBadRequest());
-        this.mockMvc.perform(get("/items/search?text=стОл&from=0&size=-20"))
-                .andExpect(status().isBadRequest());
-
     }
 
     @Transactional
     @Test
     public void goodGetItemsOfUserTest() throws Exception {
         List<ItemDto> items = new ArrayList<>();
-        this.mockMvc.perform(get("/items").header("X-Sharer-User-Id", 2))
+        this.mockMvc.perform(get("/items?from=0&size=20").header("X-Sharer-User-Id", 2))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(items)));
         item1 = new ItemDto(1L, "Стол", "Журнальный стол", true, 1, null, null,
                 null, new ArrayList<CommentDto>());
         items.add(item1);
-        this.mockMvc.perform(get("/items").header("X-Sharer-User-Id", 1L))
+        this.mockMvc.perform(get("/items?from=0&size=20").header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(items)));
         this.mockMvc.perform(get("/items?from=0&size=20").header("X-Sharer-User-Id", 1L))
@@ -286,14 +250,8 @@ public class ItemControllerTest {
     @Transactional
     @Test
     public void badGetItemsOfUserTest() throws Exception {
-        this.mockMvc.perform(get("/items").header("X-Sharer-User-Id", 200))
+        this.mockMvc.perform(get("/items?from=0&size=20").header("X-Sharer-User-Id", 200))
                 .andExpect(status().isNotFound());
-        this.mockMvc.perform(get("/items?from=0&size=0").header("X-Sharer-User-Id", 1L))
-                .andExpect(status().isBadRequest());
-        this.mockMvc.perform(get("/items?from=-1&size=20").header("X-Sharer-User-Id", 1L))
-                .andExpect(status().isBadRequest());
-        this.mockMvc.perform(get("/items?from=1&size=-4").header("X-Sharer-User-Id", 1L))
-                .andExpect(status().isBadRequest());
     }
 
     @Transactional

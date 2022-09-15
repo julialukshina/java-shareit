@@ -103,10 +103,6 @@ public class BookingControllerTests {
         shortDto = new BookingShortDto(now.plusMinutes(2), now.plusMinutes(1), 2L);
         body = objectMapper.writeValueAsString(shortDto);
         badRequestCreate(body, 2L);
-        //начало букинга в прошлом
-        shortDto = new BookingShortDto(now.minusMinutes(2), now.plusMinutes(1), 2L);
-        body = objectMapper.writeValueAsString(shortDto);
-        badRequestCreate(body, 2L);
         //бронирование недоступной к бронированию вещи
         item2.setAvailable(false);
         body = objectMapper.writeValueAsString(item2);
@@ -171,7 +167,7 @@ public class BookingControllerTests {
     public void getAllForBooker() throws Exception {
         List<BookingDto> bookings = new ArrayList<>();
         //пустой лист для пользователя, не создававшего букинги
-        this.mockMvc.perform(get("/bookings").header("X-Sharer-User-Id", 1L))
+        this.mockMvc.perform(get("/bookings?state=ALL&from=0&size=1").header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(bookings)));
         //пустой лист, так как нет букингов, отвечающих условию
@@ -179,14 +175,6 @@ public class BookingControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(bookings)));
         bookings.add(dto);
-        //корректное возвращение списка букингов без параметров
-        this.mockMvc.perform(get("/bookings").header("X-Sharer-User-Id", 2L))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(bookings)));
-        // корректное возвращение списка букингов с параметром статуса
-        this.mockMvc.perform(get("/bookings?state=ALL").header("X-Sharer-User-Id", 2L))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(bookings)));
         // корректное возвращение списка букингов с корректными параметрами
         this.mockMvc.perform(get("/bookings?state=ALL&from=0&size=1").header("X-Sharer-User-Id", 2L))
                 .andExpect(status().isOk())
@@ -195,16 +183,6 @@ public class BookingControllerTests {
         this.mockMvc.perform(get("/bookings?state=WAITING&from=0&size=1").header("X-Sharer-User-Id", 2L))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(bookings)));
-
-        //некорректные параметры
-        this.mockMvc.perform(get("/bookings?state=ha&from=0&size=1").header("X-Sharer-User-Id", 2L))
-                .andExpect(status().isBadRequest());
-        this.mockMvc.perform(get("/bookings?state=ALL&from=0&size=0").header("X-Sharer-User-Id", 2L))
-                .andExpect(status().isBadRequest());
-        this.mockMvc.perform(get("/bookings?state=ALL&from=0&size=-5").header("X-Sharer-User-Id", 2L))
-                .andExpect(status().isBadRequest());
-        this.mockMvc.perform(get("/bookings?state=ALL&from=-5&size=5").header("X-Sharer-User-Id", 2L))
-                .andExpect(status().isBadRequest());
 
         //корректная работа с различными значениями state
         BookingDto booking2 = new BookingDto(2L, now.minusMinutes(2), now.plusMinutes(4), item2, user2, BookingStatus.REJECTED);
@@ -240,21 +218,13 @@ public class BookingControllerTests {
     public void getAllForOwner() throws Exception {
         List<BookingDto> bookings = new ArrayList<>();
         //исключение для пользователя, не владеющего вещами, по которым были букинги
-        this.mockMvc.perform(get("/bookings/owner").header("X-Sharer-User-Id", 2L))
+        this.mockMvc.perform(get("/bookings/owner?state=ALL&from=0&size=1").header("X-Sharer-User-Id", 2L))
                 .andExpect(status().isNotFound());
         //пустой лист, так как нет букингов, отвечающих условию
         this.mockMvc.perform(get("/bookings/owner?state=PAST&from=0&size=1").header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(bookings)));
         bookings.add(dto);
-        //корректное возвращение списка букингов без параметров
-        this.mockMvc.perform(get("/bookings/owner").header("X-Sharer-User-Id", 1L))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(bookings)));
-        // корректное возвращение списка букингов с параметром статуса
-        this.mockMvc.perform(get("/bookings/owner?state=ALL").header("X-Sharer-User-Id", 1L))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(bookings)));
         // корректное возвращение списка букингов с корректными параметрами
         this.mockMvc.perform(get("/bookings/owner?state=ALL&from=0&size=1").header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk())
@@ -263,16 +233,6 @@ public class BookingControllerTests {
         this.mockMvc.perform(get("/bookings/owner?state=WAITING&from=0&size=1").header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(bookings)));
-
-        //некорректные параметры
-        this.mockMvc.perform(get("/bookings/owner?state=ha&from=0&size=1").header("X-Sharer-User-Id", 1L))
-                .andExpect(status().isBadRequest());
-        this.mockMvc.perform(get("/bookings/owner?state=ALL&from=0&size=0").header("X-Sharer-User-Id", 1L))
-                .andExpect(status().isBadRequest());
-        this.mockMvc.perform(get("/bookings/owner?state=ALL&from=0&size=-5").header("X-Sharer-User-Id", 1L))
-                .andExpect(status().isBadRequest());
-        this.mockMvc.perform(get("/bookings/owner?state=ALL&from=-5&size=5").header("X-Sharer-User-Id", 1L))
-                .andExpect(status().isBadRequest());
 
         //корректная работа с различными значениями state
         BookingDto booking2 = new BookingDto(2L, now.minusMinutes(2), now.plusMinutes(4), item2, user2, BookingStatus.REJECTED);

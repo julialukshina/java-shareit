@@ -83,10 +83,6 @@ public class ItemRequestTests {
                 .andExpect(jsonPath("$.requesterId", is(dto.getRequesterId()), Long.class));
         this.mockMvc.perform(post("/requests").header("X-Sharer-User-Id", 10L)
                 .content(body).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
-        shortDto.setDescription("");
-        body = objectMapper.writeValueAsString(shortDto);
-        this.mockMvc.perform(post("/requests").header("X-Sharer-User-Id", 1L)
-                .content(body).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
     }
 
     @Transactional
@@ -105,11 +101,11 @@ public class ItemRequestTests {
     @Transactional
     @Test
     public void getAll() throws Exception {
-        this.mockMvc.perform(get("/requests/all").header("X-Sharer-User-Id", 10L)
+        this.mockMvc.perform(get("/requests/all?from=0&size=2").header("X-Sharer-User-Id", 10L)
                 .content(body).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
         List<ItemRequestDto> requestsForUser1 = new ArrayList<>();
         List<ItemRequestDto> requestsForUser2 = createItemRequestsForTest();
-        this.mockMvc.perform(get("/requests/all").header("X-Sharer-User-Id", 1L)).andExpect(status().isOk())
+        this.mockMvc.perform(get("/requests/all?from=0&size=2").header("X-Sharer-User-Id", 1L)).andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(requestsForUser1)));
         this.mockMvc.perform(get("/requests/all?from=0&size=2").header("X-Sharer-User-Id", 2L))
                 .andExpect(status().isOk())
@@ -118,12 +114,6 @@ public class ItemRequestTests {
         this.mockMvc.perform(get("/requests/all?from=0&size=1").header("X-Sharer-User-Id", 2L))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(requestsForUser2)));
-        this.mockMvc.perform(get("/requests/all?from=0&size=0").header("X-Sharer-User-Id", 2L))
-                .andExpect(status().isBadRequest());
-        this.mockMvc.perform(get("/requests/all?from=-1&size=1").header("X-Sharer-User-Id", 2L))
-                .andExpect(status().isBadRequest());
-        this.mockMvc.perform(get("/requests/all?from=0&size=-1").header("X-Sharer-User-Id", 2L))
-                .andExpect(status().isBadRequest());
     }
 
     @Transactional

@@ -1,11 +1,9 @@
 package ru.practicum.shareit.user.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.users.UserNotFoundException;
-import ru.practicum.shareit.exception.users.UserValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
@@ -43,15 +41,9 @@ public class UserServiceImpl implements UserService {
         userValidation(userId);
         User updateUser = UserMapper.toUser(getUserById(userId));
         if (user.getName() != null) {
-            if (user.getName().isBlank()) {
-                throw new UserValidationException("The name can't be empty");
-            }
             updateUser.setName(user.getName());
         }
         if (user.getEmail() != null) {
-            if (user.getEmail().isBlank() || !EmailValidator.getInstance().isValid(user.getEmail())) {
-                throw new UserValidationException("The name can't be empty");
-            }
             updateUser.setEmail(user.getEmail());
         }
         user.setId(userId);
